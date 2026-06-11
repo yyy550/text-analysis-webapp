@@ -1,11 +1,11 @@
-# Netlify Build Configuration for Streamlit App
-# Note: Streamlit apps require a Python server. For production deployment,
-# consider using Streamlit Community Cloud, Railway, or a similar platform.
-# This configuration file is provided for reference purposes.
-
 [build]
-  command = "echo 'Streamlit requires a server runtime. Use Streamlit Community Cloud or similar service.'"
+  command = "pip install -r requirements.txt && mkdir -p .streamlit && echo '[server]\\nheadless = true\\nport = 8888\\nenableCORS = false' > .streamlit/config.toml"
   publish = "."
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
 
 [[headers]]
   for = "/*"

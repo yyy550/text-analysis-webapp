@@ -2,11 +2,7 @@ import streamlit as st
 import requests
 import re
 from bs4 import BeautifulSoup
-import jieba
 from collections import Counter
-from pyecharts.charts import WordCloud, Bar, Line, Pie, Funnel, Radar, Scatter, HeatMap
-from pyecharts import options as opts
-from pyecharts.globals import ThemeType
 
 
 st.set_page_config(
@@ -15,6 +11,18 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+@st.cache_resource
+def init_jieba():
+    import jieba
+    return jieba
+
+@st.cache_resource
+def init_pyecharts():
+    from pyecharts.charts import WordCloud, Bar, Line, Pie, Funnel, Radar, Scatter, HeatMap
+    from pyecharts import options as opts
+    from pyecharts.globals import ThemeType
+    return WordCloud, Bar, Line, Pie, Funnel, Radar, Scatter, HeatMap, opts, ThemeType
 
 CUSTOM_CSS = """
 <style>
@@ -240,15 +248,27 @@ STOPWORDS = {
 }
 
 
-CHART_THEMES = {
-    "🌌 极简科技": ThemeType.LIGHT,
-    "🌙 暗夜模式": ThemeType.DARK,
-    "🎨 活力多彩": ThemeType.ROMANTIC,
-    "🖼️ 经典黑白": ThemeType.SHINE,
-    "🌴 清新绿意": ThemeType.VINTAGE,
-    "🔷 商务蓝调": ThemeType.MACARONS,
-    "🌸 柔和粉紫": ThemeType.CHALK,
-}
+CHART_THEME_LABELS = [
+    "🌌 极简科技",
+    "🌙 暗夜模式", 
+    "🎨 活力多彩",
+    "🖼️ 经典黑白",
+    "🌴 清新绿意",
+    "🔷 商务蓝调",
+    "🌸 柔和粉紫",
+]
+
+def get_chart_themes():
+    _, _, _, _, _, _, _, _, opts, ThemeType = init_pyecharts()
+    return {
+        "🌌 极简科技": ThemeType.LIGHT,
+        "🌙 暗夜模式": ThemeType.DARK,
+        "🎨 活力多彩": ThemeType.ROMANTIC,
+        "🖼️ 经典黑白": ThemeType.SHINE,
+        "🌴 清新绿意": ThemeType.VINTAGE,
+        "🔷 商务蓝调": ThemeType.MACARONS,
+        "🌸 柔和粉紫": ThemeType.CHALK,
+    }
 
 
 def render_sidebar():
@@ -317,7 +337,7 @@ def render_sidebar():
 
     theme_choice = st.sidebar.selectbox(
         "图表主题",
-        list(CHART_THEMES.keys()),
+        CHART_THEME_LABELS,
         index=0,
         help="选择图表的配色风格"
     )
@@ -390,6 +410,7 @@ def fetch_text_from_url(url):
 def segment_and_count(text, min_word_len=2):
     if not text:
         return None
+    jieba = init_jieba()
     words = jieba.lcut(text, cut_all=False)
     filtered_words = [
         word for word in words
@@ -412,6 +433,8 @@ def filter_low_freq(word_freq, min_freq):
 
 
 def generate_chart(chart_type, word_freq, theme_choice, top_n=20, width="1100px", height="650px"):
+    WordCloud, Bar, Line, Pie, Funnel, Radar, Scatter, HeatMap, opts, ThemeType = init_pyecharts()
+    CHART_THEMES = get_chart_themes()
     theme = CHART_THEMES.get(theme_choice, ThemeType.LIGHT)
     sorted_freq = sorted(word_freq.items(), key=lambda x: x[1], reverse=True)
     top_words = sorted_freq[:top_n]
