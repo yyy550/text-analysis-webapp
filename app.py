@@ -246,7 +246,7 @@ CHART_THEMES = {
     "🎨 活力多彩": ThemeType.ROMANTIC,
     "🖼️ 经典黑白": ThemeType.SHINE,
     "🌴 清新绿意": ThemeType.VINTAGE,
-    "🔷 商务蓝调": ThemeType.ESSENTIALS,
+    "🔷 商务蓝调": ThemeType.MACARONS,
     "🌸 柔和粉紫": ThemeType.CHALK,
 }
 
@@ -486,9 +486,11 @@ def generate_chart(chart_type, word_freq, theme_choice, top_n=20, width="1100px"
     elif chart_type.startswith("🔻"):
         chart = (
             Funnel(init_opts=init_opts)
-            .add("词频", top_words, label_opts=opts.LabelOpts(position="inside", formatter="{b}: {c}"))
+            .add("词频", top_words[:20], 
+                 label_opts=opts.LabelOpts(position="right", formatter="{b}: {c}", font_size=12),
+                 gap=2)
             .set_global_opts(
-                title_opts=opts.TitleOpts(title=f"🔻 词频 Top-{top_n} 漏斗图",
+                title_opts=opts.TitleOpts(title=f"🔻 词频 Top-20 漏斗图",
                                           title_textstyle_opts=opts.TextStyleOpts(font_size=22, font_weight="bold"))
             )
         )
